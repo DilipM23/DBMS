@@ -1,0 +1,84 @@
+CREATE TABLE Salesman(
+	SalesmanId INT PRIMARY KEY,
+	Name VARCHAR(30),
+	City VARCHAR(20),
+	Commission INT
+);
+
+CREATE TABLE Customer(
+	CustomerId INT PRIMARY KEY,
+	CustName VARCHAR(30),
+	City VARCHAR(20),
+	Grade INT,
+	SalesmanId INT,
+	CONSTRAINT FK1 FOREIGN KEY(SalesmanId) REFERENCES Salesman(SalesmanId) ON DELETE SET NULL
+);
+
+CREATE TABLE Orders(
+	OrderNo INT PRIMARY KEY,
+	OrdDate DATE,
+	PurchaseAmt FLOAT,
+	CustomerId INT,
+	SalesmanId INT,
+	CONSTRAINT FK2 FOREIGN KEY(CustomerId) REFERENCES Customer(CustomerId) ON DELETE CASCADE,
+	CONSTRAINT FK3 FOREIGN KEY(SalesmanId) REFERENCES Salesman(SalesmanId) ON DELETE CASCADE
+);
+
+INSERT INTO Salesman VALUES 
+	(1000, "Ram", "Bangalore", 2000),
+	(2000, "Ravi", "Davangere", 1000),
+	(3000, "Raj", "Mysore", 3000),
+	(4000, "Sita", "Kolar", 2000),
+	(5000, "Sam", "Delhi", 1500);
+
+INSERT INTO Customer VALUES 
+	(100, "Avinash", "Bhadravathi", 20, 1000),
+	(200, "Dhanush", "Bangalore", 10, 1000),
+	(300, "Eshwar", "Bangalore", 12, 2000),
+	(400, "Charan", "Kolar", 8, 4000),
+	(500, "Mahishasura", "Mysore", 5, 3000);
+
+INSERT INTO Orders VALUES 
+	(1010, '2024-02-16', 20000, 100, 1000), 
+	(1020, '2024-02-16', 15000, 200, 1000),
+	(1030, '2024-01-30', 100000, 300, 2000),
+	(1040, '2024-01-28', 50000, 300, 2000),
+	(1050, '2024-02-01', 2500, 500, 3000);
+
+//Queries
+
+
+SELECT CustomerId, CustName, Grade
+FROM Customer
+WHERE Grade >
+	(SELECT AVG(Grade)
+	 FROM Customer
+	 WHERE City = "Bangalore");
+
+SELECT SalesmanId, Name
+FROM Salesman S
+WHERE 1 <
+	(SELECT COUNT(*)
+	 FROM Customer C
+	 WHERE C.SalesmanId = S.SalesmanId);
+
+SELECT S.SalesmanId, S.Name, C.CustName
+FROM Customer C, Salesman S
+WHERE C.City = S.City
+UNION
+SELECT S.SalesmanId, S.Name, "No Match"
+FROM Salesman S
+WHERE City NOT IN 
+	(SELECT City
+	 FROM Customer);
+
+CREATE VIEW HighestOrder AS
+SELECT O.OrdDate, S.SalesmanId, S.Name
+FROM Salesman S, Orders O
+WHERE S.SalesmanId = O.SalesmanId AND
+PurchaseAmt = (SELECT MAX(PurchaseAmt)
+		FROM Orders Ord
+		WHERE O.OrdDate = Ord.OrdDate);
+
+DELETE FROM Salesman
+WHERE SalesmanId = 1000;

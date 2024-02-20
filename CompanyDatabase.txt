@@ -1,0 +1,111 @@
+create table Employee(
+	SSn int,
+	Name varchar(40) NOT NULL,
+	Address varchar(40),
+	Sex varchar(10),
+	Salary int,
+	SuperSSn int,
+	DeptNumber int,
+	constraint PK1 Primary Key(SSn)
+);
+
+create table Department(
+	DNo int,
+	DName varchar(20) NOT NULL,
+	MgrSSn int,
+	MgsStartDate Date,
+	constraint PK2 Primary Key(DNo),
+	Foreign Key(MgrSSn) references Employee(SSn)
+);
+
+create table DLocation(
+	DNo int,
+	DLoc varchar(30),
+	constraint PK3 Primary Key(DNo, DLoc),
+	constraint FK1 Foreign Key(DNo) references Department (DNo)
+);
+
+create table Project(
+	PNo int,
+	PName varchar(30) NOT NULL,
+	PLocation varchar(40),
+	DNo int,
+	constraint PK4 Primary Key(PNo),
+	constraint FK2 Foreign Key(DNo) references Department(DNo)
+);
+
+create table WorksOn(
+	SSn int,
+	PNo int,
+	Hours int,
+	constraint PK5 Primary Key(SSn, PNo),
+	constraint FK3 Foreign Key(PNo) references Project(PNo),
+	constraint FK4 Foreign Key(SSn) references Employee(SSn)
+);
+
+alter table Employee add constraint FK5 Foreign Key(SuperSSn) references Employee(SSn);
+
+alter table Employee add constraint FK6 Foreign Key(DNo) references Department(DNo);
+
+insert into Employee values (35, "Avinash", "Bhadravathi", "Male", 700000, NULL, NULL);
+insert into Employee values (49, "Dhanush", "Bangalore", "Male", 650000, NULL, NULL);
+insert into Employee values (56, "Eshwar", "Bangalore", "Male", 600000, NULL, NULL);
+insert into Employee values (100, "Robert", "Bidar", "Male", 500000, NULL, NULL);
+insert into Employee values (98, "Ram", "Shivamogga", "Male", 550000, NULL, NULL);
+
+insert into Department values (1, "Finance", 56, "2003-08-31");
+insert into Department values (2, "Sales", 100, "2003-05-05");
+insert into Department values (3, "Marketing", 98, "2006-12-22");
+insert into Department values (4, "Research", 49, "2010-10-15");
+insert into Department values (5, "Accounts", 35, "2003-02-16");
+
+update Employee set DeptNumber=5 where SSn=35;
+update Employee set DeptNumber=5 where SSn=49;
+update Employee set SuperSSn=35, DeptNumber=1 where SSn=56;
+update Employee set SuperSSn=49, DeptNumber=2 where SSn=100;
+update Employee set SuperSSn=35, DeptNumber=3 where SSn=98;
+
+insert into DLocation values(1, "Ground Floor");
+insert into DLocation values(2, "First Floor");
+insert into DLocation values(3, "Second Floor");
+insert into DLocation values(4, "Basement");
+insert into DLocation values(5, "Third Floor");
+
+insert into Project values(10, "AI", "Block 1", 1);
+insert into Project values(11, "ML", "Block 2", 2);
+insert into Project values(12, "Blockchain", "Block 3", 4);
+insert into Project values(13, "Cybersecurity", "Block 1", 5);
+insert into Project values(14, "IoT", "Block 2", 5);
+
+insert into WorksOn values(35, 14, 10);
+insert into WorksOn values(49, 14, 12);
+insert into WorksOn values(56, 10, 20);
+insert into WorksOn values(98, 13, 7);
+insert into WorksOn values(100, 12, 2);
+
+(select Distinct(P.PNo)
+	From Project P, Department D, Employee E
+	where P.DNo = D.DNo and D.MgrSSn = E.SSn and E.Name="Robert")
+UNION
+(	select Distinct(P.PNo)
+	From Project P, Employee E, WorksOn W
+	Where P.PNo = W.PNo and W.SSn = E.SSn and E.Name="Robert");
+
+Select E.Name, 0.1*E.Salary + E.Salary Increased_Salary
+From Project P, Employee E, WorksOn W
+Where P.PNo=W.PNo and W.SSn=E.SSn and PName="IoT";
+
+Select sum(Salary) Total_Salary, min(Salary) Minimum_Salary, max(Salary) Maximum_Salary, avg(Salary) Average_Salary
+From Employee E, Department D
+where E.DeptNumber=D.DNo and DName="Accounts";
+
+Select D.DNo, count(*)
+From Employee E, Department D
+Where D.DNo = E.DeptNumber and
+	E.Salary > 60000 and
+	D.DNo IN (Select DeptNumber
+		From Employee
+		Group by DeptNumber
+		Having count(*) > 1)
+Group by D.DNo;
+

@@ -1,0 +1,139 @@
+CREATE TABLE Book (
+	BookId INT PRIMARY KEY,
+	Title VARCHAR(20) NOT NULL,
+	PublisherName VARCHAR(30),
+	PubYear INT
+);
+
+CREATE TABLE BookAuthor (
+	BookId INT,
+	AuthorName VARCHAR(30),
+	CONSTRAINT FK1 FOREIGN KEY(BookId) REFERENCES Book(BookId) ON DELETE CASCADE,
+	CONSTRAINT PK1 PRIMARY KEY(BookId, AuthorName)
+);
+
+CREATE TABLE Publisher (
+	Name VARCHAR(30) PRIMARY KEY,
+	Address VARCHAR(40),
+	Phone VARCHAR(10)
+);
+
+CREATE TABLE BookCopies (
+	BookId INT,
+	ProgrammeId INT,
+	NoOfCopies INT NOT NULL,
+	CONSTRAINT PK2 PRIMARY KEY(BookId, ProgrammeId),
+	CONSTRAINT FK2 FOREIGN KEY(BookId) REFERENCES Book(BookId) ON DELETE CASCADE
+);
+
+CREATE TABLE BookLending(
+	BookId INT,
+	ProgrammeId INT,
+	CardNo INT,
+	DueDate DATE NOT NULL,
+	DateOut DATE NOT NULL,
+	CONSTRAINT PK3 PRIMARY KEY(BookId, ProgrammeId, CardNo)
+);
+
+CREATE TABLE Programme(
+	ProgrammeId INT PRIMARY KEY,
+	ProgrammeName VARCHAR(20),
+	Address VARCHAR(40)
+);
+
+CREATE TABLE Card (
+	CardNo INT PRIMARY KEY
+);
+
+ALTER TABLE Book ADD CONSTRAINT FK3 FOREIGN KEY(PublisherName) REFERENCES Publisher(Name) ON DELETE CASCADE;
+
+ALTER TABLE BookCopies ADD CONSTRAINT FK4 FOREIGN KEY (ProgrammeId) REFERENCES Programme(ProgrammeId) ON DELETE CASCADE;
+
+ALTER TABLE BookLending ADD CONSTRAINT FK5 FOREIGN KEY(BookId) REFERENCES Book(BookId) ON DELETE CASCADE;
+
+ALTER TABLE BookLending ADD CONSTRAINT FK6 FOREIGN KEY(ProgrammeId) REFERENCES Programme(ProgrammeId) ON DELETE CASCADE;
+
+ALTER TABLE BookLending ADD CONSTRAINT FK7 FOREIGN KEY(CardNo) REFERENCES Card(CardNo) ON DELETE CASCADE;
+
+INSERT INTO Book values 
+	(1, "DBMS", NULL, 2015),
+	(2, "DS", NULL, 2001), 
+	(3, "Python", NULL, 2020), 
+	(4, "Java", NULL, 2023), 
+	(5, "C", NULL, 2017);
+
+INSERT INTO BookAuthor value 
+	(1, "Avinash"), 
+	(2, "Eshwar"), 
+	(3, "Dhanush"), 
+	(4, "Ram"), 
+	(5, "Sita");
+
+INSERT INTO Programme VALUES
+	(100, 'Channasandra', 'Bangalore'),
+	(101, 'Nagarbhavi', 'Bangalore'),
+	(102, 'Bhadravathi', 'Shivamogga'),
+	(103, 'KGF', 'Kolar'),
+	(104, 'Mandya', 'Mandya');
+
+INSERT INTO Card VALUES
+	(35), (43), (56), (49), (8);
+
+INSERT INTO BookLending VALUES 
+	(1, 100, 35, "2024-01-30", "2024-01-05"), 
+	(2, 101, 35, "2024-01-30", "2024-01-05"),
+	(3, 102, 35, "2024-02-29", "2024-01-10"),
+	(4, 103, 56, "2024-002-02", "2024-01-20"),
+	(5, 104, 8, "2024-02-28", "2024-01-30");
+
+INSERT INTO Publisher VALUES 
+	('Bharath', 'Bangalore', 797653425),
+	('Charan', 'KGF', 987345132),
+	('Abhiram', 'Shivamogga', 9856708534),
+	('Jadesha', 'Ballary', 9876898765),
+	('Ravana', 'Lanka', 9087653452);
+
+INSERT INTO BookCopies VALUES
+	(1, 100, 25),
+	(2, 101, 30),
+	(3, 102, 40),
+	(4, 103, 40),
+	(5, 104, 50);
+
+UPDATE Book SET PublisherName = 'Bharath' where BookId = 1;
+UPDATE Book SET PublisherName = 'Charan' where BookId = 2;
+UPDATE Book SET PublisherName = 'Abhiram' where BookId = 3;
+UPDATE Book SET PublisherName = 'Jadesha' where BookId = 4;
+UPDATE Book SET PublisherName = 'Ravana' where BookId = 5;
+
+//Queries
+	
+1.
+	SELECT B.BookId, B.Title, B.PublisherName, A.AuthorName, C.NoOfCopies, L.ProgrammeId
+	FROM Book B, BookAuthor A, BookCopies C, Programme L
+	WHERE 
+		B.BookId = A.BookId AND
+		B.BookId = C.BookId AND 
+		C.ProgrammeId = L.ProgrammeId;
+
+2.
+	SELECT CardNo
+	FROM BookLending 
+	WHERE
+		DateOut BETWEEN '2024-01-01' AND '2024-01-31'
+	GROUP BY CardNo
+	HAVING count(*) > 2;
+	
+3. 
+	CREATE VIEW Publication AS
+	SELECT PubYear
+	FROM Book;
+
+4.
+	CREATE VIEW BookDetails AS
+	SELECT B.BookId, B.Title, C.NoOfCopies
+	FROM Book B, BookCopies C, Programme P
+	WHERE 
+		B.BookId = C.BookId AND
+		C.ProgrammeId = P.ProgrammeId;
+	
