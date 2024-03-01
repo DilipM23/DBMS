@@ -40,7 +40,7 @@ INSERT INTO Actor VALUES
 	(49, 'Dhanush', 'Male'),
 	(56, 'Eshwar', 'Male'),
 	(60, 'Raam', 'Male'),
-	(70, 'Sita', 'Male');
+	(70, 'Sita', 'Female');
 
 INSERT INTO Director VALUES
 	(100, 'Prashanth Neel', 9868794567),
