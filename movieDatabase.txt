@@ -1,0 +1,120 @@
+CREATE TABLE Actor (
+	actId INT PRIMARY KEY,
+	actName VARCHAR(30),
+	gender VARCHAR(10)
+);
+
+CREATE TABLE Director(
+	dirId INT PRIMARY KEY,
+	dirName VARCHAR(30),
+	phone LONG
+);
+
+CREATE TABLE Movies(
+	movieId INT PRIMARY KEY,
+	title VARCHAR(20),
+	year INT,
+	lang VARCHAR(20),
+	dirId INT,
+	CONSTRAINT FK1 FOREIGN KEY(dirId) REFERENCES Director(dirId)
+);
+
+CREATE TABLE MovieCast(
+	actId INT,
+	movieId INT,
+	role VARCHAR(20),
+	PRIMARY KEY(actId, movieId),
+	CONSTRAINT FK2 FOREIGN KEY(actId) REFERENCES Actor(actId),
+	CONSTRAINT FK3 FOREIGN KEY(movieId) REFERENCES Movies(movieid)
+);
+
+CREATE TABLE Rating(
+	movieId INT,
+	revStar INT,
+	PRIMARY KEY(movieId, revStar),
+	CONSTRAINT FOREIGN KEY(movieId) REFERENCES Movies(movieId)
+);
+
+INSERT INTO Actor VALUES
+	(35, 'Avinash', 'Male'),
+	(49, 'Dhanush', 'Male'),
+	(56, 'Eshwar', 'Male'),
+	(60, 'Raam', 'Male'),
+	(70, 'Sita', 'Male');
+
+INSERT INTO Director VALUES
+	(100, 'Prashanth Neel', 9868794567),
+	(101, 'Rajmouli', 9897868678),
+	(102, 'Hitchcock', 9987859430),
+	(103, 'Upendra', 6876487975),
+	(104, 'Steven', 9987867593);
+
+INSERT INTO Movies VALUES
+	(1000, 'KGF', 2019, 'Kannada', 100),
+	(1001, 'Bahubali', 2018, 'Telugu', 100),
+	(1002, 'Animal', 2023, 'Telugu', 102),
+	(1003, 'Babruvahana', 1990, 'Kannada', 103),
+	(1004, 'Kirataka', 2013, 'Kannada', 104);
+
+INSERT INTO MovieCast VALUES
+	(35, 1000, 'Hero'),
+	(35, 1003, 'Hero'),
+	(70, 1004, 'Heroine'),
+	(49, 1001, 'Hero'),
+	(56, 1002, 'Hero');
+
+INSERT INTO Rating VALUES
+	(1000, 10),
+	(1000, 9),
+	(1003, 8),
+	(1001, 9),
+	(1003, 9);
+
+//Query 1
+	SELECT title
+	FROM Director D, Movies M
+	WHERE D.dirId = M.dirId AND
+	D.dirName = 'Hitchcock';
+
+//Query 2
+	SELECT M.title
+	FROM Movies M, MovieCast C
+	WHERE M.MovieId = C.MovieId AND
+	C.actId IN
+	(SELECT actId
+	FROM MovieCast
+	GROUP BY actId
+	HAVING COUNT(*) > 1)
+	GROUP BY title
+	HAVING COUNT(*) > 1;
+
+//Query 3
+	SELECT Distinct(actName)
+	FROM Actor A
+	JOIN MovieCast C ON A.actId = C.actId
+	JOIN Movies M ON M.movieId=C.movieId
+	WHERE M.year >= 2015
+	INTERSECT
+	SELECT actName
+	FROM Actor A
+	JOIN MovieCast C ON A.actId = C.actId
+	JOIN Movies M ON M.movieId=C.movieId
+	WHERE M.year <= 2000;
+
+//Query 4
+	SELECT title, MAX(revStar)
+	FROM Movies
+	INNER JOIN Rating USING (movieId)
+	GROUP BY title
+	HAVING MAX(revStar) > 0
+	ORDER BY title;
+
+//Query 5
+	UPDATE Rating
+	SET revStar = 5
+	WHERE movieId IN
+		(SELECT M.movieId
+		 FROM Movies M, Director D
+		 WHERE M.dirId = D.dirId AND
+		 dirName = 'Steven');
+
