@@ -52,7 +52,7 @@ INSERT INTO Director VALUES
 INSERT INTO Movies VALUES
 	(1000, 'KGF', 2019, 'Kannada', 100),
 	(1001, 'Bahubali', 2018, 'Telugu', 100),
-	(1002, 'Animal', 2023, 'Telugu', 102),
+	(1002, 'Animal', 2023, 'Hindi', 102),
 	(1003, 'Babruvahana', 1990, 'Kannada', 103),
 	(1004, 'Kirataka', 2013, 'Kannada', 104);
 
