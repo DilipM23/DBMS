@@ -1,0 +1,150 @@
+CREATE TABLE student (
+	usn VARCHAR(10) PRIMARY KEY,
+	sname VARCHAR(30),
+	address VARCHAR(40),
+	phone LONG,
+	gender VARCHAR(10)
+);	
+
+CREATE TABLE semSec(
+	ssid VARCHAR(10) PRIMARY KEY,
+	sem INT,
+	sec VARCHAR(5)
+);
+
+CREATE TABLE class(
+	usn VARCHAR(10),
+	ssid VARCHAR(10),
+	CONSTRAINT FK1 FOREIGN KEY(usn) REFERENCES student(usn),
+	CONSTRAINT FK2 FOREIGN KEY(ssid) REFERENCES semSec(ssid),
+	PRIMARY KEY(usn, ssid)
+);
+
+CREATE TABLE course(
+	subCode VARCHAR(10) PRIMARY KEY,
+	title VARCHAR(15),
+	sem VARCHAR(5),
+	credits INT
+);
+
+CREATE TABLE iaMarks(
+	usn VARCHAR(10),
+ 	subCode VARCHAR(10),
+	ssid VARCHAR(10),
+	test1 INT,
+	test2 INT,
+	test3 INT,
+ 	finalIa INT,
+	CONSTRAINT FK3 FOREIGN KEY(usn) REFERENCES student(usn),
+	CONSTRAINT FK4 FOREIGN KEY(ssid) REFERENCES semSec(ssid),
+	CONSTRAINT FK5 FOREIGN KEY(subCode) REFERENCES course(subCode),
+	PRIMARY KEY(usn, subCode, ssid)
+);
+
+INSERT INTO student VALUES 
+	("1RN21CS035", "Avinash", "Bhadravathi", 6362787856,"Male"),
+	("1RN21CS049", "Dhanush", "Bangalore", 6573875673,"Male"),
+	("1RN21CS056", "Eshwar", "Bangalore", 9897896785,"Male"),
+	("1BI15CS101", "Raam", "Mysore", 9987869786,"Male"),
+	("1RN21CS500", "Sita", "Mysore", 9879897867,"Female"),
+	("1RN21CS501", "Radha", "Tumkur", 9988776655,"Female"),
+	("1RN21CS502", "Rukmini", "Davangere", 9898787678,"Female"),
+	("1RN21CS503", "Krishna", "Shivamogga", 9090987890,"Male"),
+	("1RN21CS043", "Charan", "KGF", 9808908975,"Male"),
+	("1RN21CS008", "Abhiram", "Shivamogga", 9879867564,"Male"),
+	("1RN21CS039", "Bharath", "Mysore", 9876543210,"Male");
+
+INSERT INTO semSec VALUES
+	("CSE8A", 8, "A"),
+	("CSE7A", 7, "A"),
+	("CSE4A", 4, "A"),
+	("CSE8B", 8, "B"),
+	("CSE7B", 7, "B"),
+	("CSE4B", 4, "B"),
+	("CSE8C", 8, "C"),
+	("CSE7C", 7, "C"),
+	("CSE4C", 4, "C");
+
+INSERT INTO class VALUES 
+	("1RN21CS035", "CSE8A"),
+	("1RN21CS049", "CSE8B"),
+	("1RN21CS056", "CSE8C"),
+	("1RN21CS500", "CSE7A"),
+	("1RN21CS501", "CSE7B"),
+	("1RN21CS502", "CSE7C"),
+	("1RN21CS503", "CSE4A"),
+	("1RN21CS043", "CSE4B"),
+	("1RN21CS008", "CSE4C"),
+	("1RN21CS039", "CSE8A"),
+	("1BI15CS101", "CSE8A");
+
+INSERT INTO course VALUES
+	("21CS81", "DAA", 8, 4),
+	("21CS82", "DS", 8, 4),
+	("21CS71", "JAVA", 7, 5),
+	("21CS72", "Python", 7, 4),
+	("21CS41", "Web", 4, 4),
+	("21CS42", "C", 4, 3);
+
+INSERT INTO iaMarks (usn, subCode, ssid, test1, test2, test3) VALUES
+	("1RN21CS035", "21CS81", "CSE8A", 50, 50, 50),
+	("1RN21CS049", "21CS82", "CSE8B", 50, 50, 49),
+	("1RN21CS056", "21CS82", "CSE8C", 50, 50, 50),
+	("1RN21CS500", "21CS71", "CSE7A", 20, 30, 40),
+	("1RN21CS501", "21CS72", "CSE7B", 50, 48, 10),
+	("1RN21CS502", "21CS72", "CSE7C", 40, 30, 20),
+	("1RN21CS503", "21CS41", "CSE4A", 40, 40, 40),
+	("1RN21CS503", "21CS42", "CSE4A", 40, 20, 30),
+	("1RN21CS043", "21CS41", "CSE4B", 50, 50, 50),
+	("1RN21CS039", "21CS42", "CSE4C", 40, 50, 50),
+	("1RN21CS035", "21CS82", "CSE8A", 50, 50, 50),
+	("1BI15CS101", "21CS82", "CSE8A", 40, 20, 15),
+	("1BI15CS101", "21CS81", "CSE8A", 50, 39, 40);
+
+	
+//QUERY 1
+SELECT S.sname, SS.sem, SS.sec
+FROM student S, semSec SS, class C
+WHERE
+	S.usn = C.usn AND
+	SS.ssid = C.ssid AND
+	sem = 4 AND
+	sec = "C";
+      
+//QUERY 2
+SELECT SS.sem, SS.sec, S.gender, COUNT(S.gender) AS Count
+FROM student S, semSec SS, class C
+WHERE 
+	S.usn = C.usn AND
+	SS.ssid = C.ssid
+	GROUP BY SS.sem, SS.sec, S.gender
+	ORDER BY SS.sem;
+
+	
+//QUERY 3
+CREATE VIEW test1 AS
+SELECT S.usn, I.subCode, I.test1
+FROM STUDENT S, IaMarks I
+WHERE 
+	S.usn = I.usn AND
+	S.usn = "1BI15CS101";
+	
+//QUERY 4
+UPDATE IaMarks 
+SET finalIa = ((test1+test2+test3) - least(test1, test2, test3)) / 2
+WHERE usn IS NOT NULL;
+
+//QUERY 5
+SELECT S.usn, I.subCode, I.finalIa,
+CASE
+	WHEN (finalIa >= 40 AND finalIa <=50) THEN "OUTSTANDING"
+	WHEN (finalIa >=30 AND finalIa<40) THEN "AVERAGE"
+	ELSE "WEAK"
+END AS CAT
+FROM IaMArks I, semSec SS, student S
+WHERE
+	S.usn = I.usn AND
+	SS.ssid = I.ssid AND
+	SS.sem = 8;
+
+
